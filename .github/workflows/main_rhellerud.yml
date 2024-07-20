@@ -79,4 +79,20 @@ jobs:
         with:
           app-name: 'rhellerud'
           slot-name: 'Production'
+        env:
+          MAX_RETRIES: 5
+          RETRY_WAIT_SECONDS: 60
+        run: |
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i of $MAX_RETRIES"
+            if azure/webapps-deploy@v3; then
+              echo "Deployment successful"
+              exit 0
+            else
+              echo "Deployment failed. Waiting $RETRY_WAIT_SECONDS seconds before retry..."
+              sleep $RETRY_WAIT_SECONDS
+            fi
+          done
+          echo "All deployment attempts failed"
+          exit 1
           
