@@ -86,28 +86,24 @@ jobs:
           RETRY_WAIT_SECONDS=60
           echo "MAX_RETRIES=$MAX_RETRIES" >> $GITHUB_ENV
           echo "RETRY_WAIT_SECONDS=$RETRY_WAIT_SECONDS" >> $GITHUB_ENV
-      
+
       - name: 'Deploy to Azure Web App with retries'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'rhellerud'
+          slot-name: 'Production'
         env:
           MAX_RETRIES: ${{ env.MAX_RETRIES }}
           RETRY_WAIT_SECONDS: ${{ env.RETRY_WAIT_SECONDS }}
-        run: |
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Attempt $i of $MAX_RETRIES"
-            if azure/webapps-deploy@v3 --app-name 'rhellerud' --slot-name 'Production'; then
-              echo "Deployment successful"
-              exit 0
-            else
-              echo "Deployment failed. Waiting $RETRY_WAIT_SECONDS seconds before retry..."
-              sleep $RETRY_WAIT_SECONDS
-            fi
-          done
-          echo "All deployment attempts failed"
-          exit 1
-      
-      - name: 'Fetch App Service Logs'
+
+      - name: 'Check deployment status'
         if: failure()
         run: |
-          az webapp log download --name rhellerud --resource-group ai-detection
-          cat *.zip
+          echo "Deployment failed. Checking logs..."
+          az webapp log download --name rhellerud --resource-group YOUR_RESOURCE_GROUP_NAME
+          if [ -f *.zip ]; then
+            unzip -p *.zip
+          else
+            echo "No log file found"
+          fi
           
