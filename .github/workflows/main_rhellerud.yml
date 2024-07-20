@@ -63,18 +63,16 @@ jobs:
         run: unzip release.zip
 
       
-      - name: Login to Azure
-        uses: azure/login@v2
+      - name: 'Az CLI login'
+        uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_432A9524BA024125BF6AC60703F8C0CF }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0A88ED54934546C29F3F7407FDC2034B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E508B4679914F8F9D4AB2D64841AD89 }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: 'Restart Azure Web App'
         run: |
-          az webapp restart --name rhellerud --resource-group ai-detection
-        env:
-          AZURE_CLI_DISABLE_CONNECTION_VERIFICATION: 1
+          if ! az webapp restart --name rhellerud --resource-group ai-detection; then
+            echo "Failed to restart web app. Proceeding with deployment anyway."
+          fi
           
       - name: Sleep for 30 seconds
         run: sleep 30s
