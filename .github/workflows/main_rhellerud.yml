@@ -71,7 +71,7 @@ jobs:
 
       - name: 'Restart Azure Web App'
         run: |
-          az webapp restart --name rhellerud --resource-group YOUR_RESOURCE_GROUP_NAME
+          az webapp restart --name rhellerud --resource-group ai-detection
         env:
           AZURE_CLI_DISABLE_CONNECTION_VERIFICATION: 1
           
