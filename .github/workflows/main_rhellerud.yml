@@ -68,24 +68,33 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_432A9524BA024125BF6AC60703F8C0CF }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_0A88ED54934546C29F3F7407FDC2034B }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_5E508B4679914F8F9D4AB2D64841AD89 }}
+
+      - name: 'Restart Azure Web App'
+        run: |
+          az webapp restart --name rhellerud --resource-group YOUR_RESOURCE_GROUP_NAME
+        env:
+          AZURE_CLI_DISABLE_CONNECTION_VERIFICATION: 1
           
       - name: Sleep for 30 seconds
         run: sleep 30s
         shell: bash
         
-      - name: 'Deploy to Azure Web App'
-        uses: azure/webapps-deploy@v3
-        id: deploy-to-webapp
-        with:
-          app-name: 'rhellerud'
-          slot-name: 'Production'
+      - name: 'Prepare for deployment'
+        run: |
+          echo "Preparing for deployment with retry mechanism"
+          MAX_RETRIES=5
+          RETRY_WAIT_SECONDS=60
+          echo "MAX_RETRIES=$MAX_RETRIES" >> $GITHUB_ENV
+          echo "RETRY_WAIT_SECONDS=$RETRY_WAIT_SECONDS" >> $GITHUB_ENV
+      
+      - name: 'Deploy to Azure Web App with retries'
         env:
-          MAX_RETRIES: 5
-          RETRY_WAIT_SECONDS: 60
+          MAX_RETRIES: ${{ env.MAX_RETRIES }}
+          RETRY_WAIT_SECONDS: ${{ env.RETRY_WAIT_SECONDS }}
         run: |
           for i in $(seq 1 $MAX_RETRIES); do
             echo "Attempt $i of $MAX_RETRIES"
-            if azure/webapps-deploy@v3; then
+            if azure/webapps-deploy@v3 --app-name 'rhellerud' --slot-name 'Production'; then
               echo "Deployment successful"
               exit 0
             else
@@ -95,4 +104,10 @@ jobs:
           done
           echo "All deployment attempts failed"
           exit 1
+      
+      - name: 'Fetch App Service Logs'
+        if: failure()
+        run: |
+          az webapp log download --name rhellerud --resource-group ai-detection
+          cat *.zip
           
