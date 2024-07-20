@@ -99,7 +99,7 @@ jobs:
         if: failure()
         run: |
           echo "Deployment failed. Checking logs..."
-          az webapp log download --name rhellerud --resource-group YOUR_RESOURCE_GROUP_NAME
+          az webapp log download --name rhellerud --resource-group ai-detection
           if [ -f *.zip ]; then
             unzip -p *.zip
           else
