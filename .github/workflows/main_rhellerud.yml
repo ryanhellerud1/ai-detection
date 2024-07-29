@@ -66,9 +66,11 @@ jobs:
         uses: azure/cli@v1
         env:
           AZURE_CONFIG_DIR: /tmp/azure_config
+          HOME: /tmp
         with:
           azcliversion: latest
           inlineScript: |
+            mkdir -p /tmp/.azure
             echo "Attempting to log in..."
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
             echo "Login attempt completed. Checking account..."
