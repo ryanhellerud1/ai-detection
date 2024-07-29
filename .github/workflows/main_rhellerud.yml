@@ -71,17 +71,17 @@ jobs:
           azcliversion: latest
           inlineScript: |
             echo "Attempting to log in..."
-            az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            echo "Login attempt completed. Checking service principal info..."
-            az ad sp show --id ${{ secrets.AZURE_CLIENT_ID }} --query "{displayName:displayName, id:id, lastFourOfId:substring(id, sub(length(id), 4))}" -o json
-            echo "Checking account..."
-            az account show --output json
-            echo "Listing all accessible subscriptions..."
+            az login --username ${{ secrets.AZURE_USERNAME }} --password ${{ secrets.AZURE_PASSWORD }}
+            echo "Login attempt completed. Checking user info..."
+            az ad signed-in-user show --query "{displayName:displayName, userPrincipalName:userPrincipalName}" -o json
+            echo "Listing available roles..."
+            az role definition list --query "[].{roleName:roleName, roleType:roleType}" --output table
+            echo "Checking current role assignments..."
+            az role assignment list --assignee ${{ secrets.AZURE_USERNAME }} --output table
+            echo "Listing subscriptions..."
             az account list --output table
             echo "Attempting to set subscription..."
             az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} || echo "Failed to set subscription"
-            echo "Checking role assignments..."
-            az role assignment list --assignee ${{ secrets.AZURE_CLIENT_ID }} --output table
             echo "Last 4 digits of Subscription ID are ${AZURE_SUBSCRIPTION_ID: -4}"
 
       - name: 'Check Azure CLI version'
