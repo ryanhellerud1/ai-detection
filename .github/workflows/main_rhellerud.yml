@@ -71,7 +71,7 @@ jobs:
 
       - name: 'Restart Azure Web App'
         run: |
-          az webapp restart --name YOUR_WEBAPP_NAME --resource-group YOUR_RESOURCE_GROUP
+          az webapp restart --name rhellerud --resource-group ai-detection
           
       - name: Sleep for 30 seconds
         run: sleep 30s
