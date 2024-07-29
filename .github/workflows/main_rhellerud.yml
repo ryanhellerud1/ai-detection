@@ -71,13 +71,13 @@ jobs:
           azcliversion: latest
           inlineScript: |
             echo "Attempting to log in..."
-            az login --username ${{ secrets.AZURE_USERNAME }} --password ${{ secrets.AZURE_PASSWORD }}
+            az login --use-device-code
             echo "Login attempt completed. Checking user info..."
             az ad signed-in-user show --query "{displayName:displayName, userPrincipalName:userPrincipalName}" -o json
             echo "Listing available roles..."
             az role definition list --query "[].{roleName:roleName, roleType:roleType}" --output table
             echo "Checking current role assignments..."
-            az role assignment list --assignee ${{ secrets.AZURE_USERNAME }} --output table
+            az role assignment list --all --output table
             echo "Listing subscriptions..."
             az account list --output table
             echo "Attempting to set subscription..."
