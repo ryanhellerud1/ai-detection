@@ -67,6 +67,9 @@ jobs:
         with:
           azcliversion: latest
           inlineScript: |
+            mkdir -p ~/.azure
+            touch ~/.azure/config
+            chmod 777 ~/.azure/config
             echo "Attempting to log in..."
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
             echo "Login attempt completed. Checking account..."
