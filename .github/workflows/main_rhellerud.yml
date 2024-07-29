@@ -62,17 +62,26 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Az CLI login and check subscription'
+      - name: 'Az CLI login and troubleshoot'
         uses: azure/cli@v1
         with:
           inlineScript: |
+            echo "Attempting to log in..."
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-            echo "Logged in successfully. Checking subscriptions..."
+            echo "Login attempt completed. Checking account..."
+            az account show --output json
+            echo "Listing all accessible subscriptions..."
             az account list --output table
-            echo "Setting subscription..."
-            az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-            echo "Current subscription:"
-            az account show --output table
+            echo "Attempting to set subscription..."
+            az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} || echo "Failed to set subscription"
+            echo "Checking current user/service principal..."
+            az ad signed-in-user show || echo "Failed to get signed-in user info"
+
+      - name: 'Check Azure CLI version'
+        run: az --version
+
+      - name: 'Echo subscription ID'
+        run: echo "Subscription ID is ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
 
       - name: 'Restart Azure App Service'
         uses: azure/cli@v1
