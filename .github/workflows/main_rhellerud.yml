@@ -66,7 +66,10 @@ jobs:
       - name: 'Az CLI login'
         uses: azure/login@v1
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: 'Restart Azure Web App'
         run: |
@@ -87,6 +90,7 @@ jobs:
           echo "RETRY_WAIT_SECONDS=$RETRY_WAIT_SECONDS" >> $GITHUB_ENV
 
       - name: 'Deploy to Azure Web App with retries'
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'rhellerud'
