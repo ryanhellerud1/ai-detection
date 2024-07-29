@@ -1,0 +1,108 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+# workflow
+
+name: Build and deploy Python app to Azure Web App - rhellerud
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python version
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Create and start virtual environment
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+      
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        
+      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
+
+      - name: Upload artifact for deployment jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-app
+          path: |
+            release.zip
+            !venv/
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write #This is required for requesting the JWT
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: python-app
+
+      - name: Unzip artifact for deployment
+        run: unzip release.zip
+
+      
+      - name: 'Az CLI login'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: 'Restart Azure Web App'
+        run: |
+          if ! az webapp restart --name rhellerud --resource-group ai-detection; then
+            echo "Failed to restart web app. Proceeding with deployment anyway."
+          fi
+          
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: bash
+        
+      - name: 'Prepare for deployment'
+        run: |
+          echo "Preparing for deployment with retry mechanism"
+          MAX_RETRIES=5
+          RETRY_WAIT_SECONDS=60
+          echo "MAX_RETRIES=$MAX_RETRIES" >> $GITHUB_ENV
+          echo "RETRY_WAIT_SECONDS=$RETRY_WAIT_SECONDS" >> $GITHUB_ENV
+
+      - name: 'Deploy to Azure Web App with retries'
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'rhellerud'
+          slot-name: 'Production'
+        env:
+          MAX_RETRIES: ${{ env.MAX_RETRIES }}
+          RETRY_WAIT_SECONDS: ${{ env.RETRY_WAIT_SECONDS }}
+
+      - name: 'Check deployment status'
+        if: failure()
+        run: |
+          echo "Deployment failed. Checking logs..."
+          az webapp log download --name rhellerud --resource-group ai-detection
+          if [ -f *.zip ]; then
+            unzip -p *.zip
+          else
+            echo "No log file found"
+          fi
+          
