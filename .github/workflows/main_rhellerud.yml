@@ -64,12 +64,11 @@ jobs:
 
       - name: 'Az CLI login and troubleshoot'
         uses: azure/cli@v1
+        env:
+          AZURE_CONFIG_DIR: /tmp/azure_config
         with:
           azcliversion: latest
           inlineScript: |
-            mkdir -p ~/.azure
-            touch ~/.azure/config
-            chmod 777 ~/.azure/config
             echo "Attempting to log in..."
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
             echo "Login attempt completed. Checking account..."
