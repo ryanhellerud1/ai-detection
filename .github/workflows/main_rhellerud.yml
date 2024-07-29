@@ -62,20 +62,16 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      
       - name: 'Az CLI login'
-        uses: azure/login@v1
+        uses: azure/cli@v1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-        
+          inlineScript: |
+            az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       - name: 'Restart Azure Web App'
         run: |
-          if ! az webapp restart --name rhellerud --resource-group ai-detection; then
-            echo "Failed to restart web app. Proceeding with deployment anyway."
-          fi
+          az webapp restart --name YOUR_WEBAPP_NAME --resource-group YOUR_RESOURCE_GROUP
           
       - name: Sleep for 30 seconds
         run: sleep 30s
