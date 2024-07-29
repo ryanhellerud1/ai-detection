@@ -65,6 +65,7 @@ jobs:
       - name: 'Az CLI login and troubleshoot'
         uses: azure/cli@v1
         with:
+          azcliversion: latest
           inlineScript: |
             echo "Attempting to log in..."
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
@@ -76,12 +77,10 @@ jobs:
             az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} || echo "Failed to set subscription"
             echo "Checking current user/service principal..."
             az ad signed-in-user show || echo "Failed to get signed-in user info"
+            echo "Last 4 digits of Subscription ID are ${AZURE_SUBSCRIPTION_ID: -4}"
 
       - name: 'Check Azure CLI version'
         run: az --version
-
-      - name: 'Echo subscription ID'
-        run: echo "Subscription ID is ${{ secrets.AZURE_SUBSCRIPTION_ID }}"
 
       - name: 'Restart Azure App Service'
         uses: azure/cli@v1
