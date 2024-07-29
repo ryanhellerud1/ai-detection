@@ -62,16 +62,25 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Az CLI login'
+      - name: 'Az CLI login and check subscription'
         uses: azure/cli@v1
         with:
           inlineScript: |
             az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+            echo "Logged in successfully. Checking subscriptions..."
+            az account list --output table
+            echo "Setting subscription..."
             az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+            echo "Current subscription:"
+            az account show --output table
 
-      - name: 'Restart Azure Web App'
-        run: |
-          az webapp restart --name rhellerud --resource-group ai-detection
+      - name: 'Restart Azure App Service'
+        uses: azure/cli@v1
+        with:
+          inlineScript: |
+            echo "Attempting to restart App Service..."
+            az webapp restart --name rhellerud --resource-group ai-detection
+            echo "Restart command executed."
           
       - name: Sleep for 30 seconds
         run: sleep 30s
