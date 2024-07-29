@@ -65,6 +65,10 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Create staging slot
+        run: |
+          az webapp deployment slot create --name rhellerud --resource-group ai-detection --slot staging
+
       - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
