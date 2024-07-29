@@ -50,8 +50,6 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -62,69 +60,20 @@ jobs:
       - name: Unzip artifact for deployment
         run: unzip release.zip
 
-      - name: 'Az CLI login and troubleshoot'
-        uses: azure/cli@v1
-        env:
-          AZURE_CONFIG_DIR: /tmp/azure_config
-          HOME: /tmp
+      - name: Log in to Azure
+        uses: azure/login@v1
         with:
-          azcliversion: latest
-          inlineScript: |
-            echo "Attempting to log in..."
-            az login --use-device-code
-            echo "Login attempt completed. Checking user info..."
-            az ad signed-in-user show --query "{displayName:displayName, userPrincipalName:userPrincipalName}" -o json
-            echo "Listing available roles..."
-            az role definition list --query "[].{roleName:roleName, roleType:roleType}" --output table
-            echo "Checking current role assignments..."
-            az role assignment list --all --output table
-            echo "Listing subscriptions..."
-            az account list --output table
-            echo "Attempting to set subscription..."
-            az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }} || echo "Failed to set subscription"
-            echo "Last 4 digits of Subscription ID are ${AZURE_SUBSCRIPTION_ID: -4}"
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Check Azure CLI version'
-        run: az --version
-
-      - name: 'Restart Azure App Service'
-        uses: azure/cli@v1
-        with:
-          inlineScript: |
-            echo "Attempting to restart App Service..."
-            az webapp restart --name rhellerud --resource-group ai-detection
-            echo "Restart command executed."
-          
-      - name: Sleep for 30 seconds
-        run: sleep 30s
-        shell: bash
-        
-      - name: 'Prepare for deployment'
-        run: |
-          echo "Preparing for deployment with retry mechanism"
-          MAX_RETRIES=5
-          RETRY_WAIT_SECONDS=60
-          echo "MAX_RETRIES=$MAX_RETRIES" >> $GITHUB_ENV
-          echo "RETRY_WAIT_SECONDS=$RETRY_WAIT_SECONDS" >> $GITHUB_ENV
-
-      - name: 'Deploy to Azure Web App with retries'
+      - name: 'Deploy to Azure Web App'
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'rhellerud'
           slot-name: 'Production'
-        env:
-          MAX_RETRIES: ${{ env.MAX_RETRIES }}
-          RETRY_WAIT_SECONDS: ${{ env.RETRY_WAIT_SECONDS }}
 
-      - name: 'Check deployment status'
-        if: failure()
-        run: |
-          echo "Deployment failed. Checking logs..."
-          az webapp log download --name rhellerud --resource-group ai-detection
-          if [ -f *.zip ]; then
-            unzip -p *.zip
-          else
-            echo "No log file found"
-          fi
-          
+      - name: 'Restart Azure App Service'
+        uses: azure/CLI@v1
+        with:
+          inlineScript: |
+            az webapp restart --name rhellerud --resource-group ai-detection
