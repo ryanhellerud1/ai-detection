@@ -65,7 +65,6 @@ jobs:
         with:
           app-name: 'rhellerud'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: release.zip
         
       - name: 'Restart Azure App Service'
