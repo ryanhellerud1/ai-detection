@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Text Detector!!</title>
-    <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-        textarea { width: 100%; height: 200px; }
-        button { margin-top: 10px; }
-    </style>
+    <title>AI Text Detector</title>
 </head>
 <body>
     <h1>AI Text Detector</h1>
     <form method="POST">
-        <textarea name="text" placeholder="Enter text to analyze"></textarea>
+        <textarea name="text" rows="4" cols="50" placeholder="Enter text to analyze"></textarea>
         <br>
-        <button type="submit">Analyze</button>
+        <input type="submit" value="Analyze">
     </form>
+
     {% if result %}
-    <h2>Results:</h2>
-    <p>Classification: {{ result.classification }}</p>
+    <h2>Analysis Result:</h2>
+    <p>Result: {{ result.text }}</p>
     <p>Confidence: {{ result.confidence }}</p>
     <p>Perplexity: {{ result.perplexity }}</p>
+    <h3>Interpretation guide:</h3>
+    <ul>
+        <li>Perplexity < 45: Likely AI-generated</li>
+        <li>Perplexity > 45: Likely human-written</li>
+    </ul>
+    <p>Note: These ranges are approximate and may require adjustment based on specific use cases.</p>
     {% endif %}
 </body>
 </html>
