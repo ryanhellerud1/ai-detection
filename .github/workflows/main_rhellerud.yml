@@ -61,11 +61,9 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'rhellerud'
-          slot-name: 'Production'
-          package: release.zip
-        
+        run: |
+          az webapp deployment source config-zip --resource-group ai-detection --name rhellerud --src release.zip
+          timeout-minutes: 30
+
       - name: 'Restart Azure App Service'
         run: az webapp restart --name rhellerud --resource-group ai-detection
