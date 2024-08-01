@@ -1,3 +1,11 @@
+try:
+    import torch
+    import numpy as np
+    from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+except ImportError as e:
+    print(f"Error importing required libraries: {str(e)}")
+    # Handle the error appropriately, maybe set a flag or use alternative libraries
+
 import sys
 import os
 import logging
@@ -12,13 +20,6 @@ logger.debug(f"Python version: {sys.version}")
 logger.debug(f"Python path: {sys.path}")
 logger.debug(f"Current working directory: {os.getcwd()}")
 logger.debug(f"Directory contents: {os.listdir('.')}")
-
-try:
-    import torch
-    logger.debug(f"PyTorch version: {torch.__version__}")
-    logger.debug(f"CUDA available: {torch.cuda.is_available()}")
-except ImportError as e:
-    logger.error(f"Failed to import PyTorch: {str(e)}")
 
 app = Flask(__name__)
 CORS(app)
