@@ -3,7 +3,7 @@ import os
 import logging
 from flask import Flask, request, render_template
 from flask_cors import CORS
-from detect_ai import calculate_perplexity
+from detect_ai import calculate_perplexity, load_model_and_tokenizer
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -23,17 +23,27 @@ except ImportError as e:
 app = Flask(__name__)
 CORS(app)
 
+# Load model and tokenizer once when the app starts
+model, tokenizer = load_model_and_tokenizer()
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
     logger.debug("Home route accessed")
+    result = None
     if request.method == 'POST':
         text = request.form['text']
-        perplexity = calculate_perplexity(text)
+        perplexity = calculate_perplexity(text, model, tokenizer)
         if perplexity is not None:
-            return render_template('index.html', perplexity=perplexity, text=text)
+            result = {
+                'text': 'Likely AI-generated' if perplexity < 50 else 'Likely human-written',
+                'perplexity': f'{perplexity:.2f}'
+            }
         else:
-            return render_template('index.html', error="Error calculating perplexity")
-    return render_template('index.html')
+            result = {
+                'text': 'Error calculating perplexity',
+                'perplexity': 'N/A'
+            }
+    return render_template('index.html', result=result)
 
 if __name__ == '__main__':
     logger.debug("Starting Flask app")
