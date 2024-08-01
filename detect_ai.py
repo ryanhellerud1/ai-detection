@@ -1,6 +1,5 @@
 import torch
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
-import math
 
 def load_model_and_tokenizer():
     model = GPT2LMHeadModel.from_pretrained('gpt2')
