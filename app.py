@@ -18,7 +18,12 @@ try:
     logger.debug(f"NumPy version: {np.__version__}")
 except ImportError as e:
     logger.error(f"Failed to import NumPy: {str(e)}")
-    logger.error(f"Traceback: {traceback.format_exc()}")
+
+try:
+    import torch
+    logger.debug(f"PyTorch version: {torch.__version__}")
+except ImportError as e:
+    logger.error(f"Failed to import PyTorch: {str(e)}")
 
 app = Flask(__name__)
 CORS(app)
