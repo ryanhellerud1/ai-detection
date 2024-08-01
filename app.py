@@ -17,7 +17,7 @@ def home():
         
         logging.info(f"Calculated perplexity: {perplexity}")
         
-        if perplexity < 40:
+        if perplexity < 50:
             result = " likely AI-generated"
             confidence = "high"
         else:

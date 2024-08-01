@@ -65,6 +65,9 @@ jobs:
           az webapp config set --resource-group ai-detection --name rhellerud --generic-configurations "{'SCM_COMMAND_IDLE_TIMEOUT':'1800'}"
 
       - name: Deploy to Azure Web App
+        run: sleep 30
+
+      - name: Deploy to Azure Web App
         run: |
           az webapp deploy --resource-group ai-detection --name rhellerud --src-path release.zip
 
