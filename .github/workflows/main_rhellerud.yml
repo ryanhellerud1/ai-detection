@@ -1,6 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
+# workflow
 
 name: Build and deploy Python app to Azure Web App - rhellerud
 
@@ -32,21 +33,14 @@ jobs:
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      - name: Create deployment package
-        run: |
-          zip -r new-python-app.zip . -x "*.git*"
-
-      - name: List contents of current directory
-        run: ls -la
-
-      - name: Display zip file info
-        run: file new-python-app.zip
+      - name: Zip artifact for deployment
+        run: zip release.zip ./* -r
 
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: new-python-app.zip
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -69,6 +63,9 @@ jobs:
       - name: Increase SCM timeout
         run: |
           az webapp config set --resource-group ai-detection --name rhellerud --generic-configurations "{'SCM_COMMAND_IDLE_TIMEOUT':'1800'}"
+
+      - name: Deploy to Azure Web App
+        run: sleep 30
 
       - name: Deploy to Azure Web App
         run: |
