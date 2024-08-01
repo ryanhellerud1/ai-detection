@@ -79,11 +79,8 @@ jobs:
           az webapp config set --resource-group ai-detection --name rhellerud --generic-configurations "{'SCM_COMMAND_IDLE_TIMEOUT':'1800'}"
 
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'rhellerud'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: './new-python-app.zip'
+        run: |
+          az webapp deploy --resource-group ai-detection --name rhellerud --src-path new-python-app.zip
 
       - name: Wait for app to start
         run: |
