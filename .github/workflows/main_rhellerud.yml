@@ -18,30 +18,34 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python version
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
 
-      - name: Create and start virtual environment
+      - name: Install NumPy
         run: |
-          python -m venv venv
-          source venv/bin/activate
-      
-      - name: Install dependencies
+          python -m pip install --upgrade pip
+          pip install numpy==1.21.6 -v
+          pip show numpy
+
+      - name: Install other dependencies
         run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
           pip install -r requirements.txt -v
           pip freeze > installed_requirements.txt
           cat installed_requirements.txt
 
       - name: Verify NumPy installation
         run: |
-          pip show numpy
           python -c "import numpy; print(numpy.__version__)"
         
+      - name: Print system information
+        run: |
+          python --version
+          which python
+          echo $PYTHONPATH
+          ls -l /usr/local/lib/python3.9/site-packages
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Create deployment package
