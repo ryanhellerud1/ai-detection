@@ -8,55 +8,26 @@ from flask_cors import CORS
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-logger.info("Starting application...")
+logger.debug(f"Python version: {sys.version}")
+logger.debug(f"Python path: {sys.path}")
+logger.debug(f"Current working directory: {os.getcwd()}")
+logger.debug(f"Directory contents: {os.listdir('.')}")
 
-# Add python_packages to sys.path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'python_packages')))
-logger.info(f"Python path: {sys.path}")
+try:
+    import numpy as np
+    logger.debug(f"NumPy version: {np.__version__}")
+except ImportError as e:
+    logger.error(f"Failed to import NumPy: {str(e)}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
 
 app = Flask(__name__)
 CORS(app)
 
-logger.info("Flask app created")
-
-try:
-    logger.info("Importing detect_ai module...")
-    from detect_ai import analyze_text
-    logger.info("Successfully imported detect_ai module")
-except Exception as e:
-    logger.error(f"Error importing detect_ai module: {str(e)}", exc_info=True)
-    raise
-
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    logger.info("Received request to home route")
-    result = None
-    if request.method == 'POST':
-        text = request.form['text']
-        logger.info(f"Analyzing text: {text[:50]}...")  # Log first 50 characters of input
-        try:
-            perplexity = analyze_text(text)
-            logger.info(f"Calculated perplexity: {perplexity}")
-            
-            if perplexity < 50:
-                result = " likely AI-generated"
-                confidence = "high"
-            else:
-                result = " likely human-written"
-                confidence = "high"
-            
-            result = {
-                "text": result,
-                "confidence": confidence,
-                "perplexity": f"{perplexity:.2f}"
-            }
-        except Exception as e:
-            logger.error(f"Error during text analysis: {str(e)}", exc_info=True)
-            result = {"error": "An error occurred during analysis"}
-    
-    return render_template('index.html', result=result)
-
-logger.info("Application startup complete")
+    logger.debug("Home route accessed")
+    return "Hello, World!"
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    logger.debug("Starting Flask app")
+    app.run(debug=True, host='0.0.0.0', port=8000)
