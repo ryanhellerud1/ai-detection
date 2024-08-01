@@ -33,10 +33,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          while read requirement; do
-            echo "Installing $requirement"
-            pip install $requirement -v
-          done < requirements.txt
+          pip install -r requirements.txt -v
           pip freeze > installed_requirements.txt
           cat installed_requirements.txt
 

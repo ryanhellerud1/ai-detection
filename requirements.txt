@@ -1,7 +1,8 @@
-https://files.pythonhosted.org/packages/b1/c9/3c0a0f6f0f8d4d3e6d1b6c0c6d9e1c8f5c3d0c1c89a9a2a0b2a4d0d1d2c3d/numpy-1.21.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-https://download.pytorch.org/whl/cpu/torch-1.9.0%2Bcpu-cp39-cp39-linux_x86_64.whl
-https://download.pytorch.org/whl/cpu/torchvision-0.10.0%2Bcpu-cp39-cp39-linux_x86_64.whl
+numpy==1.21.6
+torch==1.9.0+cpu
+torchvision==0.10.0+cpu
 torchaudio==0.9.0
+-f https://download.pytorch.org/whl/torch_stable.html
 transformers==4.30.2
 flask==2.2.5
 gunicorn==22.0.0
