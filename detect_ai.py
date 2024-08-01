@@ -14,7 +14,7 @@ def calculate_perplexity(text, model, tokenizer):
     stride = 512
     seq_len = encodings.input_ids.size(1)
 
-#using a sliding window to calculate perplexity
+#using a sliding window to stream encodingscalculate perplexity
     nlls = []
     prev_end_loc = 0
     for begin_loc in range(0, seq_len, stride):
