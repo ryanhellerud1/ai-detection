@@ -69,7 +69,7 @@ jobs:
 
       - name: Deploy to Azure Web App
         run: |
-          az webapp deploy --resource-group ai-detection --name rhellerud --src-path release.zip
+          az webapp deploy --resource-group ai-detection --name rhellerud --src-path python-app.zip
 
       - name: Restart web app
         run: |
