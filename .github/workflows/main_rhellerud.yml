@@ -78,3 +78,17 @@ jobs:
       - name: Restart web app
         run: |
           az webapp restart --name rhellerud --resource-group ai-detection
+
+      - name: Wait for app to start
+        run: |
+          sleep 30  # Wait for the app to restart
+
+      - name: View application logs
+        run: |
+          az webapp log download --resource-group ai-detection --name rhellerud --log-file app_logs.zip
+          unzip -p app_logs.zip | tail -n 1000
+
+      - name: View Docker logs
+        run: |
+          az webapp log download --resource-group ai-detection --name rhellerud --log-file docker_logs.zip
+          unzip -p docker_logs.zip | tail -n 1000
