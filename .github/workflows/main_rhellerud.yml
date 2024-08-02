@@ -105,11 +105,11 @@ jobs:
       - name: Check deployment package contents
         run: unzip -l new-python-app.zip
 
+      - name: View application logs
+        run: |
+          az webapp log tail --name rhellerud --resource-group ai-detection
+
       - name: Wait for app to start and perform health check
         run: |
           sleep 120  # Wait for 2 minutes
           curl -sSf https://rhellerud.azurewebsites.net || echo "Health check failed"
-
-      - name: View application logs
-        run: |
-          az webapp log tail --name rhellerud --resource-group ai-detection
