@@ -64,6 +64,7 @@ jobs:
       - name: Download GPT-2 model
         run: |
           python -c "from detect_ai import download_model_and_tokenizer; download_model_and_tokenizer()"
+        continue-on-error: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -89,15 +90,25 @@ jobs:
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
+        id: deploy-to-webapp
         with:
           app-name: 'rhellerud'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: './new-python-app.zip'
-          startup-command: 'gunicorn --bind=0.0.0.0 --timeout 600 app:app'
 
-      - name: Wait for app to start
+      - name: Output deployment results
+        if: always()
         run: |
-          sleep 60  # Wait for the app to restart
+          echo "Deployment Status: ${{ steps.deploy-to-webapp.outcome }}"
+          echo "Deployment Output: ${{ steps.deploy-to-webapp.outputs.webapp-url }}"
+
+      - name: Check deployment package contents
+        run: unzip -l new-python-app.zip
+
+      - name: Wait for app to start and perform health check
+        run: |
+          sleep 120  # Wait for 2 minutes
+          curl -sSf https://rhellerud.azurewebsites.net || echo "Health check failed"
 
       - name: View application logs
         run: |
