@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from detect_ai import analyze_text, load_model_and_tokenizer
 
 app = Flask(__name__)
@@ -19,10 +19,27 @@ def startup():
     except ImportError as e:
         logging.error(f"Failed to import NumPy: {e}")
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home():
     logging.info("Home route accessed")
-    return "Hello, World!"
+    if request.method == 'POST':
+        text = request.form.get('text', '')
+        if not text:
+            logging.warning("No text provided in request")
+            return render_template('index.html', error='No text provided')
+        
+        logging.info(f"Analyzing text: {text[:50]}...")  # Log first 50 characters
+        try:
+            logging.info("Starting text analysis")
+            perplexity = analyze_text(text)
+            logging.info(f"Analysis complete. Perplexity: {perplexity}")
+            result_text = "Likely AI-generated" if perplexity < 50 else "Likely human-written"
+            return render_template('index.html', result={'text': result_text, 'perplexity': perplexity})
+        except Exception as e:
+            logging.error(f"Error analyzing text: {str(e)}", exc_info=True)
+            return render_template('index.html', error='An error occurred during analysis')
+    
+    return render_template('index.html')
 
 @app.route('/health', methods=['GET'])
 def health_check():
