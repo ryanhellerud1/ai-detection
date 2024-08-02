@@ -1,6 +1,10 @@
 import os
 import torch
+import logging
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
 
 MODEL_PATH = os.path.join(os.getcwd(), 'gpt2_model')
 TOKENIZER_PATH = os.path.join(os.getcwd(), 'gpt2_tokenizer')
@@ -14,41 +18,53 @@ def download_model_and_tokenizer():
         tokenizer.save_pretrained(TOKENIZER_PATH)
 
 def load_model_and_tokenizer():
-    model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
-    tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
-    return model, tokenizer
+    try:
+        logging.debug("Loading GPT-2 model")
+        model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
+        tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
+        logging.debug("Model loaded successfully")
+        return model, tokenizer
+    except Exception as e:
+        logging.error(f"Error loading model: {e}")
+        return None, None
 
-#perplexity is a measure of how well a model predicts a sample from itself therby measuring the model's uncertainty. A higher perplexity indicates a higher uncertainty in the model's predictions indicating more likely a human-written text.
 def calculate_perplexity(text, model, tokenizer):
-    encodings = tokenizer(text, return_tensors='pt')
-    max_length = model.config.n_positions
-    stride = 512
-    seq_len = encodings.input_ids.size(1)
+    try:
+        logging.debug(f"Analyzing text: {text}")
+        encodings = tokenizer(text, return_tensors='pt')
+        max_length = model.config.n_positions
+        stride = 512
+        seq_len = encodings.input_ids.size(1)
 
-#using a sliding window to stream encodingscalculate perplexity
-    nlls = []
-    prev_end_loc = 0
-    for begin_loc in range(0, seq_len, stride):
-        end_loc = min(begin_loc + max_length, seq_len)
-        trg_len = end_loc - prev_end_loc  
-        input_ids = encodings.input_ids[:, begin_loc:end_loc]
-        target_ids = input_ids.clone()
-        target_ids[:, :-trg_len] = -100
+        nlls = []
+        prev_end_loc = 0
+        for begin_loc in range(0, seq_len, stride):
+            end_loc = min(begin_loc + max_length, seq_len)
+            trg_len = end_loc - prev_end_loc  
+            input_ids = encodings.input_ids[:, begin_loc:end_loc]
+            target_ids = input_ids.clone()
+            target_ids[:, :-trg_len] = -100
 
-        with torch.no_grad():
-            outputs = model(input_ids, labels=target_ids)
-            neg_log_likelihood = outputs.loss * trg_len
+            with torch.no_grad():
+                outputs = model(input_ids, labels=target_ids)
+                neg_log_likelihood = outputs.loss * trg_len
 
-        nlls.append(neg_log_likelihood)
+            nlls.append(neg_log_likelihood)
 
-        prev_end_loc = end_loc
-        if end_loc == seq_len:
-            break
-# formula for perplexity is the exponentiation of the average negative log-likelihood per token
-    ppl = torch.exp(torch.stack(nlls).sum() / end_loc)
-    return ppl.item()
+            prev_end_loc = end_loc
+            if end_loc == seq_len:
+                break
+
+        ppl = torch.exp(torch.stack(nlls).sum() / end_loc)
+        logging.debug(f"Perplexity score calculated: {ppl.item()}")
+        return ppl.item()
+    except Exception as e:
+        logging.error(f"Error analyzing text: {e}")
+        return None
 
 def analyze_text(text):
     model, tokenizer = load_model_and_tokenizer()
+    if model is None or tokenizer is None:
+        return None
     perplexity = calculate_perplexity(text, model, tokenizer)
     return perplexity
