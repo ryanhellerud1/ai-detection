@@ -52,10 +52,18 @@ jobs:
         run: |
           ls -R models/
 
+      - name: Make startup script executable
+        run: |
+          chmod +x startup.sh
+          ls -la  # This will show us the file permissions
+
       - name: Create deployment package
         run: |
           source venv/bin/activate
           zip -r new-python-app.zip . -x "*.git*"
+
+      - name: List contents of deployment package
+        run: unzip -l new-python-app.zip
 
       - name: List contents of current directory
         run: ls -la
@@ -72,9 +80,6 @@ jobs:
       - name: Create startup command file
         run: |
           echo "gunicorn --bind=0.0.0.0 --timeout 600 app:app" > startup.txt
-
-      - name: Make startup script executable
-        run: chmod +x startup.sh
 
   deploy:
     runs-on: ubuntu-latest
