@@ -73,6 +73,9 @@ jobs:
         run: |
           echo "gunicorn --bind=0.0.0.0 --timeout 600 app:app" > startup.txt
 
+      - name: Make startup script executable
+        run: chmod +x startup.sh
+
   deploy:
     runs-on: ubuntu-latest
     needs: build
