@@ -74,11 +74,11 @@ jobs:
         run: |
           source venv/bin/activate
           python -c "from detect_ai import download_model_and_tokenizer; download_model_and_tokenizer()"
-        continue-on-error: true
 
       - name: Verify GPT-2 model download
         run: |
-          ls -la /tmp/8dcb290350f8c7f/gpt2_model
+          ls -la models/gpt2_model
+          ls -la models/gpt2_tokenizer
 
   deploy:
     runs-on: ubuntu-latest

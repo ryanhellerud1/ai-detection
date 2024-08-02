@@ -6,14 +6,16 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-MODEL_PATH = os.path.join(os.getcwd(), 'gpt2_model')
-TOKENIZER_PATH = os.path.join(os.getcwd(), 'gpt2_tokenizer')
+MODEL_PATH = os.path.join(os.getcwd(), 'models/gpt2_model')
+TOKENIZER_PATH = os.path.join(os.getcwd(), 'models/gpt2_tokenizer')
 
 def download_model_and_tokenizer():
     if not os.path.exists(MODEL_PATH):
+        os.makedirs(MODEL_PATH)
         model = GPT2LMHeadModel.from_pretrained('gpt2')
         model.save_pretrained(MODEL_PATH)
     if not os.path.exists(TOKENIZER_PATH):
+        os.makedirs(TOKENIZER_PATH)
         tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
         tokenizer.save_pretrained(TOKENIZER_PATH)
 
