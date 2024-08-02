@@ -28,26 +28,21 @@ jobs:
           python -m venv venv
           source venv/bin/activate
 
-      - name: Install NumPy
+      - name: Install dependencies
         run: |
           source venv/bin/activate
           python -m pip install --upgrade pip
-          pip install numpy==1.21.6 -v
-          pip show numpy
-
-      - name: Verify NumPy installation
-        run: |
-          source venv/bin/activate
-          python -c "import numpy; print(numpy.__version__)"
-
-      - name: Install other dependencies
-        run: |
-          source venv/bin/activate
           pip install -r requirements.txt -v
-          pip freeze > installed_requirements.txt
-          cat installed_requirements.txt
 
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+      - name: Download GPT-2 model
+        run: |
+          source venv/bin/activate
+          python -c "from detect_ai import download_model_and_tokenizer; download_model_and_tokenizer()"
+
+      - name: Verify GPT-2 model download
+        run: |
+          ls -la models/gpt2_model
+          ls -la models/gpt2_tokenizer
 
       - name: Create deployment package
         run: |
@@ -69,16 +64,6 @@ jobs:
       - name: Create startup command file
         run: |
           echo "gunicorn --bind=0.0.0.0 --timeout 600 app:app" > startup.txt
-
-      - name: Download GPT-2 model
-        run: |
-          source venv/bin/activate
-          python -c "from detect_ai import download_model_and_tokenizer; download_model_and_tokenizer()"
-
-      - name: Verify GPT-2 model download
-        run: |
-          ls -la models/gpt2_model
-          ls -la models/gpt2_tokenizer
 
   deploy:
     runs-on: ubuntu-latest
