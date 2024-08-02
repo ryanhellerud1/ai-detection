@@ -26,7 +26,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install --no-cache-dir -r requirements.txt
+          pip uninstall numpy -y
+          pip install numpy==1.21.6
+
+      - name: Check installed packages
+        run: |
+          pip list
+          python -c "import numpy; print(numpy.__version__)"
 
       - name: Download GPT-2 model
         run: |
