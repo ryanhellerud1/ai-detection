@@ -6,24 +6,21 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-MODEL_PATH = os.path.join(os.getcwd(), 'models/gpt2_model')
-TOKENIZER_PATH = os.path.join(os.getcwd(), 'models/gpt2_tokenizer')
-
-def download_model_and_tokenizer():
-    if not os.path.exists(MODEL_PATH):
-        os.makedirs(MODEL_PATH)
-        model = GPT2LMHeadModel.from_pretrained('gpt2')
-        model.save_pretrained(MODEL_PATH)
-    if not os.path.exists(TOKENIZER_PATH):
-        os.makedirs(TOKENIZER_PATH)
-        tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
-        tokenizer.save_pretrained(TOKENIZER_PATH)
+MODEL_PATH = 'models/gpt2_model'
+TOKENIZER_PATH = 'models/gpt2_tokenizer'
 
 def load_model_and_tokenizer():
     try:
         logging.debug("Loading GPT-2 model")
-        model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
-        tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
+        if not os.path.exists(MODEL_PATH) or not os.path.exists(TOKENIZER_PATH):
+            logging.warning("Model or tokenizer not found locally. Downloading from Hugging Face.")
+            model = GPT2LMHeadModel.from_pretrained('gpt2')
+            tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
+            model.save_pretrained(MODEL_PATH)
+            tokenizer.save_pretrained(TOKENIZER_PATH)
+        else:
+            model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
+            tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
         logging.debug("Model loaded successfully")
         return model, tokenizer
     except Exception as e:
@@ -67,6 +64,11 @@ def calculate_perplexity(text, model, tokenizer):
 def analyze_text(text):
     model, tokenizer = load_model_and_tokenizer()
     if model is None or tokenizer is None:
+        logging.error("Failed to load model or tokenizer")
         return None
-    perplexity = calculate_perplexity(text, model, tokenizer)
-    return perplexity
+    try:
+        perplexity = calculate_perplexity(text, model, tokenizer)
+        return perplexity
+    except Exception as e:
+        logging.error(f"Error analyzing text: {e}")
+        return None

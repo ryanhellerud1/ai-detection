@@ -37,12 +37,11 @@ jobs:
       - name: Download GPT-2 model
         run: |
           source venv/bin/activate
-          python -c "from detect_ai import download_model_and_tokenizer; download_model_and_tokenizer()"
+          python -c "from transformers import GPT2LMHeadModel, GPT2TokenizerFast; model = GPT2LMHeadModel.from_pretrained('gpt2'); tokenizer = GPT2TokenizerFast.from_pretrained('gpt2'); model.save_pretrained('models/gpt2_model'); tokenizer.save_pretrained('models/gpt2_tokenizer')"
 
-      - name: Verify GPT-2 model download
+      - name: Verify model download
         run: |
-          ls -la models/gpt2_model
-          ls -la models/gpt2_tokenizer
+          ls -R models/
 
       - name: Create deployment package
         run: |
