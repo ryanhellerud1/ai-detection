@@ -6,26 +6,34 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
 
-MODEL_PATH = 'models/gpt2_model'
-TOKENIZER_PATH = 'models/gpt2_tokenizer'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'gpt2_model')
+TOKENIZER_PATH = os.path.join(BASE_DIR, 'models', 'gpt2_tokenizer')
+
+model = None
+tokenizer = None
 
 def load_model_and_tokenizer():
-    try:
-        logging.debug("Loading GPT-2 model")
-        if not os.path.exists(MODEL_PATH) or not os.path.exists(TOKENIZER_PATH):
-            logging.warning("Model or tokenizer not found locally. Downloading from Hugging Face.")
-            model = GPT2LMHeadModel.from_pretrained('gpt2')
-            tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
-            model.save_pretrained(MODEL_PATH)
-            tokenizer.save_pretrained(TOKENIZER_PATH)
-        else:
-            model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
-            tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
-        logging.debug("Model loaded successfully")
-        return model, tokenizer
-    except Exception as e:
-        logging.error(f"Error loading model: {e}")
-        return None, None
+    global model, tokenizer
+    if model is None or tokenizer is None:
+        try:
+            logging.debug(f"Loading GPT-2 model from {MODEL_PATH}")
+            if not os.path.exists(MODEL_PATH) or not os.path.exists(TOKENIZER_PATH):
+                logging.warning("Model or tokenizer not found locally. Downloading from Hugging Face.")
+                model = GPT2LMHeadModel.from_pretrained('gpt2')
+                tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
+                os.makedirs(MODEL_PATH, exist_ok=True)
+                os.makedirs(TOKENIZER_PATH, exist_ok=True)
+                model.save_pretrained(MODEL_PATH)
+                tokenizer.save_pretrained(TOKENIZER_PATH)
+            else:
+                model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
+                tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
+            logging.debug("Model loaded successfully")
+        except Exception as e:
+            logging.error(f"Error loading model: {e}")
+            model, tokenizer = None, None
+    return model, tokenizer
 
 def calculate_perplexity(text, model, tokenizer):
     try:

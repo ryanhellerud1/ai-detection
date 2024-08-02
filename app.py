@@ -41,9 +41,7 @@ def analyze():
     try:
         perplexity = analyze_text(text)
         logger.debug(f"Perplexity: {perplexity}")
-        if perplexity is None:
-            return jsonify({"error": "Failed to analyze text"}), 500
-        return jsonify({"perplexity": perplexity})
+        return jsonify({'perplexity': perplexity})
     except Exception as e:
         logger.error(f"Error analyzing text: {str(e)}")
         return jsonify({'error': 'An error occurred during analysis'}), 500

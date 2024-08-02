@@ -37,7 +37,16 @@ jobs:
       - name: Download GPT-2 model
         run: |
           source venv/bin/activate
-          python -c "from transformers import GPT2LMHeadModel, GPT2TokenizerFast; model = GPT2LMHeadModel.from_pretrained('gpt2'); tokenizer = GPT2TokenizerFast.from_pretrained('gpt2'); model.save_pretrained('models/gpt2_model'); tokenizer.save_pretrained('models/gpt2_tokenizer')"
+          python -c "
+          import os
+          from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+          model = GPT2LMHeadModel.from_pretrained('gpt2')
+          tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
+          os.makedirs('models/gpt2_model', exist_ok=True)
+          os.makedirs('models/gpt2_tokenizer', exist_ok=True)
+          model.save_pretrained('models/gpt2_model')
+          tokenizer.save_pretrained('models/gpt2_tokenizer')
+          "
 
       - name: Verify model download
         run: |
