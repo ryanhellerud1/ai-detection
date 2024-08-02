@@ -1,9 +1,21 @@
+import os
 import torch
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
+MODEL_PATH = os.path.join(os.getcwd(), 'gpt2_model')
+TOKENIZER_PATH = os.path.join(os.getcwd(), 'gpt2_tokenizer')
+
+def download_model_and_tokenizer():
+    if not os.path.exists(MODEL_PATH):
+        model = GPT2LMHeadModel.from_pretrained('gpt2')
+        model.save_pretrained(MODEL_PATH)
+    if not os.path.exists(TOKENIZER_PATH):
+        tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
+        tokenizer.save_pretrained(TOKENIZER_PATH)
+
 def load_model_and_tokenizer():
-    model = GPT2LMHeadModel.from_pretrained('gpt2')
-    tokenizer = GPT2TokenizerFast.from_pretrained('gpt2')
+    model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
+    tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
     return model, tokenizer
 
 #perplexity is a measure of how well a model predicts a sample from itself therby measuring the model's uncertainty. A higher perplexity indicates a higher uncertainty in the model's predictions indicating more likely a human-written text.
