@@ -1,6 +1,7 @@
 import os
 import logging
 from transformers import GPT2LMHeadModel, GPT2TokenizerFast
+import torch
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
