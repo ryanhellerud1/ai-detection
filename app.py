@@ -5,6 +5,8 @@ from detect_ai import analyze_text, load_model_and_tokenizer
 
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+# Load the model when the app starts
+load_model_and_tokenizer()
 
 @app.before_first_request
 def startup():
@@ -28,18 +30,21 @@ def health_check():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
+    logging.info("Analyze route accessed")
     data = request.json
     text = data.get('text', '')
     if not text:
+        logging.warning("No text provided in request")
         return jsonify({'error': 'No text provided'}), 400
     
     logging.info(f"Analyzing text: {text[:50]}...")  # Log first 50 characters
     try:
+        logging.info("Starting text analysis")
         perplexity = analyze_text(text)
-        logging.info(f"Perplexity: {perplexity}")
+        logging.info(f"Analysis complete. Perplexity: {perplexity}")
         return jsonify({'perplexity': perplexity})
     except Exception as e:
-        logging.error(f"Error analyzing text: {str(e)}")
+        logging.error(f"Error analyzing text: {str(e)}", exc_info=True)
         return jsonify({'error': 'An error occurred during analysis'}), 500
 
 if __name__ == '__main__':

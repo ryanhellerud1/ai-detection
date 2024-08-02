@@ -4,7 +4,7 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 import torch
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, 'models', 'gpt2_model')
@@ -20,7 +20,9 @@ def load_model_and_tokenizer():
         model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
         tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
         logging.info("Model loaded successfully")
-    return model, tokenizer
+
+# Load the model when the module is imported
+load_model_and_tokenizer()
 
 def calculate_perplexity(text, model, tokenizer):
     try:
@@ -53,17 +55,14 @@ def calculate_perplexity(text, model, tokenizer):
         logging.debug(f"Perplexity score calculated: {ppl.item()}")
         return ppl.item()
     except Exception as e:
-        logging.error(f"Error analyzing text: {e}")
+        logging.error(f"Error calculating perplexity: {str(e)}", exc_info=True)
         return None
 
 def analyze_text(text):
-    model, tokenizer = load_model_and_tokenizer()
-    if model is None or tokenizer is None:
-        logging.error("Failed to load model or tokenizer")
-        return None
     try:
         perplexity = calculate_perplexity(text, model, tokenizer)
+        logging.info(f"Perplexity calculated: {perplexity}")
         return perplexity
     except Exception as e:
-        logging.error(f"Error analyzing text: {e}")
+        logging.error(f"Error analyzing text: {str(e)}", exc_info=True)
         return None
