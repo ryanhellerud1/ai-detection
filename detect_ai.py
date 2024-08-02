@@ -17,7 +17,14 @@ def load_model_and_tokenizer():
     global model, tokenizer
     if model is None or tokenizer is None:
         try:
-            logging.debug(f"Loading GPT-2 model from {MODEL_PATH}")
+            logging.info(f"Loading GPT-2 model from {MODEL_PATH}")
+            logging.info(f"Current directory: {os.getcwd()}")
+            logging.info(f"Directory contents: {os.listdir()}")
+            if os.path.exists(MODEL_PATH):
+                logging.info(f"Model path contents: {os.listdir(MODEL_PATH)}")
+            if os.path.exists(TOKENIZER_PATH):
+                logging.info(f"Tokenizer path contents: {os.listdir(TOKENIZER_PATH)}")
+            
             if not os.path.exists(MODEL_PATH) or not os.path.exists(TOKENIZER_PATH):
                 logging.warning("Model or tokenizer not found locally. Downloading from Hugging Face.")
                 model = GPT2LMHeadModel.from_pretrained('gpt2')
@@ -29,7 +36,7 @@ def load_model_and_tokenizer():
             else:
                 model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
                 tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
-            logging.debug("Model loaded successfully")
+            logging.info("Model loaded successfully")
         except Exception as e:
             logging.error(f"Error loading model: {e}")
             model, tokenizer = None, None

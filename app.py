@@ -1,6 +1,7 @@
+import os
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from detect_ai import analyze_text
+from detect_ai import analyze_text, load_model_and_tokenizer
 import logging
 
 logging.basicConfig(level=logging.DEBUG)
@@ -8,6 +9,13 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 CORS(app)
+
+@app.before_first_request
+def startup():
+    logging.info("Starting up the application")
+    logging.info(f"Current directory: {os.getcwd()}")
+    logging.info(f"Directory contents: {os.listdir()}")
+    load_model_and_tokenizer()
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -29,6 +37,10 @@ def home():
                 'perplexity': 'N/A'
             }
     return render_template('index.html', result=result)
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({"status": "healthy"}),
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
