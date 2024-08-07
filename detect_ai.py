@@ -24,36 +24,56 @@ def load_model_and_tokenizer():
 # Load the model when the module is imported
 load_model_and_tokenizer()
 
-def calculate_perplexity(text, model, tokenizer):
+def calculate_perplexity(text, language_model, tokenizer):
     try:
         logging.debug(f"Analyzing text: {text}")
-        encodings = tokenizer(text, return_tensors='pt')
-        max_length = model.config.n_positions
-        stride = 512
-        seq_len = encodings.input_ids.size(1)
+        
+        # Tokenize the input text
+        token_encodings = tokenizer(text, return_tensors='pt')
+        
+        # Get the maximum sequence length the model can handle
+        max_sequence_length = language_model.config.n_positions
+        
+        # Set the stride for sliding window approach
+        window_stride = 512
+        
+        # Get the total length of the input sequence
+        total_sequence_length = token_encodings.input_ids.size(1)
 
-        nlls = []
-        prev_end_loc = 0
-        for begin_loc in range(0, seq_len, stride):
-            end_loc = min(begin_loc + max_length, seq_len)
-            trg_len = end_loc - prev_end_loc  
-            input_ids = encodings.input_ids[:, begin_loc:end_loc]
+        negative_log_likelihoods = []
+        previous_window_end = 0
+        
+        # Iterate over the text using a sliding window approach
+        for window_start in range(0, total_sequence_length, window_stride):
+            # Determine the end of the current window
+            window_end = min(window_start + max_sequence_length, total_sequence_length)
+            
+            # Calculate the target length for this window
+            target_length = window_end - previous_window_end
+            
+            # Extract the input ids for the current window
+            input_ids = token_encodings.input_ids[:, window_start:window_end]
+            
+            # Create target ids, masking out previously processed tokens
             target_ids = input_ids.clone()
-            target_ids[:, :-trg_len] = -100
+            target_ids[:, :-target_length] = -100
 
+            # Calculate the loss for this window
             with torch.no_grad():
-                outputs = model(input_ids, labels=target_ids)
-                neg_log_likelihood = outputs.loss * trg_len
+                model_output = language_model(input_ids, labels=target_ids)
+                window_negative_log_likelihood = model_output.loss * target_length
 
-            nlls.append(neg_log_likelihood)
+            negative_log_likelihoods.append(window_negative_log_likelihood)
 
-            prev_end_loc = end_loc
-            if end_loc == seq_len:
+            previous_window_end = window_end
+            if window_end == total_sequence_length:
                 break
 
-        ppl = torch.exp(torch.stack(nlls).sum() / end_loc)
-        logging.debug(f"Perplexity score calculated: {ppl.item()}")
-        return ppl.item()
+        # Calculate the perplexity using the accumulated negative log likelihoods
+        perplexity = torch.exp(torch.stack(negative_log_likelihoods).sum() / total_sequence_length)
+        
+        logging.debug(f"Perplexity score calculated: {perplexity.item()}")
+        return perplexity.item()
     except Exception as e:
         logging.error(f"Error calculating perplexity: {str(e)}", exc_info=True)
         return None
