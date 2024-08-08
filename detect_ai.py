@@ -7,8 +7,7 @@ import torch
 logging.basicConfig(level=logging.INFO)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, 'models', 'gpt2_model')
-TOKENIZER_PATH = os.path.join(BASE_DIR, 'models', 'gpt2_tokenizer')
+MODEL_NAME = 'gpt2'  # Use the standard GPT-2 model from Hugging Face
 
 model = None
 tokenizer = None
@@ -16,9 +15,9 @@ tokenizer = None
 def load_model_and_tokenizer():
     global model, tokenizer
     if model is None or tokenizer is None:
-        logging.info(f"Loading GPT-2 model from {MODEL_PATH}")
-        model = GPT2LMHeadModel.from_pretrained(MODEL_PATH)
-        tokenizer = GPT2TokenizerFast.from_pretrained(TOKENIZER_PATH)
+        logging.info(f"Loading GPT-2 model '{MODEL_NAME}' from Hugging Face")
+        model = GPT2LMHeadModel.from_pretrained(MODEL_NAME)
+        tokenizer = GPT2TokenizerFast.from_pretrained(MODEL_NAME)
         logging.info("Model loaded successfully")
 
 # Load the model when the module is imported
