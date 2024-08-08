@@ -28,30 +28,18 @@ def calculate_perplexity(text, language_model, tokenizer):
     try:
         logging.debug(f"Analyzing text: {text}")
         
-        # Tokenize the input text
         token_encodings = tokenizer(text, return_tensors='pt')
-        
-        # Get the maximum sequence length the model can handle
         max_sequence_length = language_model.config.n_positions
-        
-        # Set the stride for sliding window approach
         window_stride = 512
-        
-        # Get the total length of the input sequence
         total_sequence_length = token_encodings.input_ids.size(1)
-
         negative_log_likelihoods = []
         previous_window_end = 0
         
         # Iterate over the text using a sliding window approach
         for window_start in range(0, total_sequence_length, window_stride):
-            # Determine the end of the current window
+           
             window_end = min(window_start + max_sequence_length, total_sequence_length)
-            
-            # Calculate the target length for this window
             target_length = window_end - previous_window_end
-            
-            # Extract the input ids for the current window
             input_ids = token_encodings.input_ids[:, window_start:window_end]
             
             # Create target ids, masking out previously processed tokens
