@@ -19,8 +19,8 @@
     <p>Perplexity: {{ result.perplexity }}</p>
     <h3>Interpretation guide:</h3>
     <ul>
-        <li>Perplexity < 70: Likely AI-generated</li>
-        <li>Perplexity > 70: Likely human-written</li>
+        <li>Perplexity < 50: Likely AI-generated</li>
+        <li>Perplexity > 50: Likely human-written</li>
     </ul>
     <p>perplexity is a measure of how well a model predicts a sample from itself therby measuring the model's uncertainty. A higher perplexity indicates a higher uncertainty in the model's predictions indicating more likely a human-written text..</p>
     {% endif %}
